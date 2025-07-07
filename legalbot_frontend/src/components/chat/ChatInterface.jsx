@@ -8,6 +8,7 @@ import { Badge } from '../ui/badge';
 import WelcomeScreen from '../WelcomeScreen';
 import DocumentEditor from '../documents/DocumentEditor';
 import { toast } from 'sonner';
+import { generatePDF, generateDOCX, generateFilename } from '../../utils/documentGenerator';
 import {
   Send,
   Bot,
@@ -217,21 +218,31 @@ export default function ChatInterface() {
 
   const handleDownloadDocument = async (content, format) => {
     try {
-      // Create a blob with the document content
-      const blob = new Blob([content], { type: 'text/plain' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `legal_document_${new Date().getTime()}.${format === 'docx' ? 'txt' : format}`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      // Generate filename
+      const filename = generateFilename('legal_document', format);
 
-      toast.success(`Document downloaded as ${format.toUpperCase()}!`);
+      if (format === 'pdf') {
+        await generatePDF(content, filename);
+        toast.success('PDF downloaded successfully!');
+      } else if (format === 'docx') {
+        await generateDOCX(content, filename);
+        toast.success('DOCX downloaded successfully!');
+      } else {
+        // Fallback to text download
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        toast.success(`Document downloaded as ${format.toUpperCase()}!`);
+      }
     } catch (error) {
       console.error('Download failed:', error);
-      toast.error('Download failed. Please try again.');
+      toast.error(`Failed to download ${format.toUpperCase()} document`);
     }
   };
 
@@ -369,9 +380,9 @@ export default function ChatInterface() {
   }
 
   return (
-    <div className="flex-1 flex bg-white">
+    <div className="flex-1 flex bg-white h-screen overflow-hidden">
       {/* Chat Interface */}
-      <div className={`flex flex-col ${showEditor ? 'w-1/2' : 'w-full'} transition-all duration-300`}>
+      <div className={`flex flex-col ${showEditor ? 'w-1/2' : 'w-full'} transition-all duration-300 h-full`}>
       {/* Header */}
       <div className="border-b border-gray-200 p-4">
         <div className="flex items-center justify-between">
