@@ -39,6 +39,20 @@ function App() {
     }
   }, []);
 
+  // Auto-login for demo purposes
+  useEffect(() => {
+    const { isAuthenticated: authStoreAuth, login } = useAuthStore.getState();
+    if (!authStoreAuth && !isAuthenticated()) {
+      // Try auto-login with demo credentials
+      login({
+        email: 'test@example.com',
+        password: 'testpass123'
+      }).catch(() => {
+        console.log('Auto-login failed, user needs to login manually');
+      });
+    }
+  }, []);
+
   const renderMainContent = () => {
     switch (currentView) {
       case 'documents':

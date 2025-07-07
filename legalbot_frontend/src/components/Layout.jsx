@@ -133,13 +133,13 @@ export default function Layout({ children, currentView, onViewChange }) {
 
         {/* Sessions List - Only show when in chat view */}
         {currentView === 'chat' && (
-          <div className="flex-1 overflow-hidden">
-            <div className="p-4">
+          <div className="flex-1 overflow-hidden flex flex-col">
+            <div className="p-4 flex-shrink-0">
               <h2 className="text-sm font-semibold text-gray-700 mb-3">Recent Sessions</h2>
             </div>
-          
-          <ScrollArea className="flex-1 px-4">
-            <div className="space-y-2">
+
+          <ScrollArea className="flex-1 px-4 min-h-0">
+            <div className="space-y-2 pb-4">
               {sessions.map((session) => (
                 <Card 
                   key={session.id}

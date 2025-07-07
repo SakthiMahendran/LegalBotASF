@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useSessionsStore, useAIStore } from '../lib/store';
+import { useState, useEffect } from 'react';
+import { useSessionsStore, useAIStore, useAuthStore } from '../lib/store';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
@@ -79,7 +79,23 @@ const features = [
 export default function WelcomeScreen() {
   const { createSession } = useSessionsStore();
   const { healthStatus, checkHealth } = useAIStore();
+  const { login, isAuthenticated } = useAuthStore();
   const [isCreating, setIsCreating] = useState(false);
+  const [isAutoLogin, setIsAutoLogin] = useState(false);
+
+  useEffect(() => {
+    // Auto-login with test credentials for demo
+    if (!isAuthenticated && !isAutoLogin) {
+      setIsAutoLogin(true);
+      login({
+        email: 'test@example.com',
+        password: 'testpass123'
+      }).catch(error => {
+        console.error('Auto-login failed:', error);
+        setIsAutoLogin(false);
+      });
+    }
+  }, [isAuthenticated, login, isAutoLogin]);
 
   const handleCreateDocument = async (documentType) => {
     setIsCreating(true);
@@ -125,14 +141,23 @@ export default function WelcomeScreen() {
           <p className="text-xl text-gray-600 mb-6">
             Your AI-powered legal document assistant
           </p>
-          <Button 
+          <Button
             onClick={handleQuickStart}
-            disabled={isCreating}
+            disabled={isCreating || !isAuthenticated}
             size="lg"
             className="px-8 py-3"
           >
-            {isCreating ? 'Creating...' : 'Start Creating Documents'}
+            {isAutoLogin ? 'Authenticating...' :
+             isCreating ? 'Creating...' :
+             !isAuthenticated ? 'Please wait...' :
+             'Start Creating Documents'}
           </Button>
+
+          {!isAuthenticated && !isAutoLogin && (
+            <p className="text-sm text-red-600 mt-2">
+              Authentication required. Please refresh the page.
+            </p>
+          )}
         </div>
 
         {/* Features */}

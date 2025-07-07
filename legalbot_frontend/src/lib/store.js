@@ -13,10 +13,17 @@ export const useAuthStore = create((set, get) => ({
     try {
       const response = await authAPI.login(credentials);
       set({ isAuthenticated: true, isLoading: false });
+      console.log("Login successful:", response.data);
       return response.data;
     } catch (error) {
+      console.error("Login failed:", error);
+      const errorMessage =
+        error.response?.data?.detail ||
+        error.response?.data?.error ||
+        error.message ||
+        "Login failed";
       set({
-        error: error.response?.data?.error || "Login failed",
+        error: errorMessage,
         isLoading: false,
       });
       throw error;
@@ -82,7 +89,9 @@ export const useSessionsStore = create((set, get) => ({
   createSession: async (sessionData) => {
     set({ isLoading: true, error: null });
     try {
+      console.log("Creating session with data:", sessionData);
       const response = await sessionsAPI.create(sessionData);
+      console.log("Session created successfully:", response.data);
       const newSession = response.data;
       set((state) => ({
         sessions: [newSession, ...state.sessions],
@@ -92,6 +101,7 @@ export const useSessionsStore = create((set, get) => ({
       return newSession;
     } catch (error) {
       console.error("Session creation error:", error);
+      console.error("Error response:", error.response);
       const errorMessage =
         error.response?.data?.detail ||
         error.response?.data?.error ||
@@ -153,12 +163,21 @@ export const useMessagesStore = create((set, get) => ({
   fetchMessages: async (sessionId) => {
     set({ isLoading: true, error: null });
     try {
+      console.log("Fetching messages for session:", sessionId);
       const response = await messagesAPI.list(sessionId);
+      const messages = response.data.results || response.data;
+      console.log(
+        "Fetched messages:",
+        messages.length,
+        "messages for session",
+        sessionId
+      );
       set({
-        messages: response.data.results || response.data,
+        messages: messages,
         isLoading: false,
       });
     } catch (error) {
+      console.error("Failed to fetch messages:", error);
       set({
         error: error.response?.data?.error || "Failed to fetch messages",
         isLoading: false,
@@ -186,7 +205,10 @@ export const useMessagesStore = create((set, get) => ({
     }));
   },
 
-  clearMessages: () => set({ messages: [] }),
+  clearMessages: () => {
+    console.log("Clearing messages");
+    set({ messages: [] });
+  },
   clearError: () => set({ error: null }),
 }));
 

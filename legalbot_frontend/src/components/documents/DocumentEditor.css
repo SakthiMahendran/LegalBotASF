@@ -1,0 +1,140 @@
+/* Custom styles for React Quill in Document Editor */
+
+.ql-editor {
+  font-family: 'Times New Roman', serif !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  padding: 20px !important;
+  min-height: 500px !important;
+}
+
+.ql-editor h1 {
+  font-size: 24px !important;
+  font-weight: bold !important;
+  text-align: center !important;
+  margin: 20px 0 !important;
+  text-transform: uppercase !important;
+}
+
+.ql-editor h2 {
+  font-size: 18px !important;
+  font-weight: bold !important;
+  margin: 16px 0 8px 0 !important;
+}
+
+.ql-editor h3 {
+  font-size: 16px !important;
+  font-weight: bold !important;
+  margin: 14px 0 6px 0 !important;
+}
+
+.ql-editor p {
+  margin: 8px 0 !important;
+  text-align: justify !important;
+}
+
+.ql-editor ol, .ql-editor ul {
+  margin: 12px 0 !important;
+  padding-left: 30px !important;
+}
+
+.ql-editor li {
+  margin: 4px 0 !important;
+}
+
+.ql-editor blockquote {
+  border-left: 4px solid #ccc !important;
+  margin: 16px 0 !important;
+  padding-left: 16px !important;
+  font-style: italic !important;
+}
+
+/* Toolbar customization */
+.ql-toolbar {
+  border-top: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  padding: 8px 12px !important;
+}
+
+.ql-toolbar .ql-formats {
+  margin-right: 15px !important;
+}
+
+/* Container styling */
+.ql-container {
+  border-left: none !important;
+  border-right: none !important;
+  border-bottom: none !important;
+  font-family: 'Times New Roman', serif !important;
+}
+
+/* Legal document specific styles */
+.ql-editor .legal-title {
+  font-size: 20px !important;
+  font-weight: bold !important;
+  text-align: center !important;
+  text-transform: uppercase !important;
+  margin: 30px 0 !important;
+}
+
+.ql-editor .legal-section {
+  font-size: 16px !important;
+  font-weight: bold !important;
+  margin: 20px 0 10px 0 !important;
+}
+
+.ql-editor .signature-block {
+  margin-top: 40px !important;
+  margin-bottom: 20px !important;
+}
+
+.ql-editor .signature-line {
+  border-bottom: 1px solid #000 !important;
+  width: 300px !important;
+  display: inline-block !important;
+  margin: 0 10px !important;
+}
+
+/* Print styles */
+@media print {
+  .ql-toolbar {
+    display: none !important;
+  }
+  
+  .ql-editor {
+    padding: 0 !important;
+    font-size: 12px !important;
+  }
+}
+
+/* Focus styles */
+.ql-editor:focus {
+  outline: none !important;
+}
+
+.ql-container.ql-snow {
+  border: 1px solid #e5e7eb !important;
+}
+
+.ql-toolbar.ql-snow {
+  border: 1px solid #e5e7eb !important;
+  border-bottom: 1px solid #e5e7eb !important;
+}
+
+/* Custom button styles for legal templates */
+.legal-template-btn {
+  background-color: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #475569 !important;
+  font-size: 12px !important;
+  padding: 4px 8px !important;
+  border-radius: 4px !important;
+  margin: 2px !important;
+}
+
+.legal-template-btn:hover {
+  background-color: #e2e8f0 !important;
+  border-color: #cbd5e1 !important;
+}
