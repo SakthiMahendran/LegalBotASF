@@ -27,11 +27,13 @@ import {
   FileEdit,
   Settings,
   ChevronUp,
-  ChevronDown
+  ChevronDown,
+  Loader2
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { toast } from 'sonner';
+import { aiAPI } from '../../lib/api';
 
 const DocumentPreview = ({ 
   document, 
@@ -47,6 +49,8 @@ const DocumentPreview = ({
   const [fileName, setFileName] = useState('legal_document');
   const [refinementRequest, setRefinementRequest] = useState('');
   const [showControls, setShowControls] = useState(false);
+  const [isRefining, setIsRefining] = useState(false);
+  const [isExtractingDetails, setIsExtractingDetails] = useState(false);
   const [editableDetails, setEditableDetails] = useState({
     'Document Type': document?.document_type || 'Legal Document',
     'Party 1 Name': 'John Smith',
@@ -83,10 +87,122 @@ const DocumentPreview = ({
     onDownload?.(document?.content || editedContent, fileFormat, filename);
   };
 
-  const handleRefinement = () => {
-    onRefine?.(refinementRequest);
-    setRefinementRequest('');
-    toast.success('Refinement request sent!');
+  const handleRefinement = async () => {
+    if (!refinementRequest.trim()) return;
+
+    try {
+      setIsRefining(true);
+
+      // Call the refine API
+      const response = await aiAPI.refine({
+        current_draft: document?.content || editedContent,
+        user_request: refinementRequest
+      });
+
+      // Update the document content with the refined version
+      const refinedContent = response.data.result;
+      setEditedContent(refinedContent);
+
+      // Update the document through the parent component
+      onUpdate?.(refinedContent);
+
+      setRefinementRequest('');
+      toast.success('Document refined successfully!');
+    } catch (error) {
+      console.error('Failed to refine document:', error);
+      toast.error('Failed to refine document. Please try again.');
+    } finally {
+      setIsRefining(false);
+    }
+  };
+
+  const handleExtractDetails = async () => {
+    if (!document?.content) return;
+
+    try {
+      setIsExtractingDetails(true);
+
+      // Use the generate API as a workaround for detail extraction
+      const extractionPrompt = `Please analyze this legal document and extract the key details in the following JSON format:
+
+{
+  "Document Type": "type of document",
+  "Party 1 Name": "first party name",
+  "Party 2 Name": "second party name",
+  "Date": "document date",
+  "Property Address": "property address if applicable",
+  "Consideration": "monetary amount if applicable",
+  "Governing Law": "governing law if mentioned"
+}
+
+Document to analyze:
+${document.content}
+
+Please respond with ONLY the JSON object containing the extracted details.`;
+
+      const response = await aiAPI.generate({
+        prompt: extractionPrompt,
+        conversation_history: []
+      });
+
+      // Parse the AI response to extract JSON
+      let extractedDetails = {};
+      try {
+        const aiResponse = response.data.result;
+        // Try to find JSON in the response
+        const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          extractedDetails = JSON.parse(jsonMatch[0]);
+        } else {
+          // Fallback: parse key-value pairs from text
+          extractedDetails = parseDetailsFromText(aiResponse);
+        }
+      } catch (parseError) {
+        console.error('Failed to parse AI response:', parseError);
+        // Fallback: create basic details from document content
+        extractedDetails = {
+          "Document Type": "Legal Document",
+          "Content Preview": document.content.substring(0, 100) + "..."
+        };
+      }
+
+      // Update the editable details with extracted information
+      setEditableDetails(prev => ({
+        ...prev,
+        ...extractedDetails
+      }));
+
+      toast.success('Document details extracted successfully!');
+    } catch (error) {
+      console.error('Failed to extract details:', error);
+      console.error('Error details:', error.response?.data);
+
+      // Show more specific error message
+      const errorMessage = error.response?.data?.error || 'Failed to extract details. Please try again.';
+      toast.error(errorMessage);
+    } finally {
+      setIsExtractingDetails(false);
+    }
+  };
+
+  // Helper function to parse details from text response
+  const parseDetailsFromText = (text) => {
+    const details = {};
+    const lines = text.split('\n');
+
+    lines.forEach(line => {
+      // Look for patterns like "Key: Value" or "Key - Value"
+      const match = line.match(/^([^:]+):\s*(.+)$/) || line.match(/^([^-]+)-\s*(.+)$/);
+      if (match) {
+        const key = match[1].trim();
+        const value = match[2].trim();
+        if (key && value) {
+          details[key] = value;
+        }
+      }
+    });
+
+    return details;
   };
 
   const categorizeDetails = useCallback(() => {
@@ -354,11 +470,18 @@ const DocumentPreview = ({
                   />
                   <Button
                     onClick={handleRefinement}
-                    disabled={!refinementRequest.trim()}
+                    disabled={!refinementRequest.trim() || isRefining}
                     className="w-full"
                     size="sm"
                   >
-                    Refine Document
+                    {isRefining ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Refining...
+                      </>
+                    ) : (
+                      'Refine Document'
+                    )}
                   </Button>
                 </div>
               </AccordionContent>
@@ -371,6 +494,33 @@ const DocumentPreview = ({
               </AccordionTrigger>
               <AccordionContent>
                 <div className="space-y-4">
+                  {/* Extract Details Button */}
+                  <div className="flex justify-between items-center">
+                    <p className="text-sm text-muted-foreground">
+                      Auto-extract details from document content
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleExtractDetails}
+                      disabled={isExtractingDetails || !document?.content}
+                      className="flex items-center gap-2"
+                    >
+                      {isExtractingDetails ? (
+                        <>
+                          <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                          Extracting...
+                        </>
+                      ) : (
+                        <>
+                          <FileEdit className="h-3 w-3" />
+                          Extract Details
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  <Separator />
                   {/* Document Type - Non-editable */}
                   <div className="space-y-2">
                     <Label htmlFor="doc-type">📋 Document Type</Label>
