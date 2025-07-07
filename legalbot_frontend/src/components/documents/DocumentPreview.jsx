@@ -12,19 +12,22 @@ import { Separator } from '../ui/separator';
 import { Alert, AlertDescription } from '../ui/alert';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion';
 import { ScrollArea } from '../ui/scroll-area';
-import { 
-  Eye, 
-  Code, 
-  Edit, 
-  Download, 
-  CheckCircle, 
+import {
+  Eye,
+  Code,
+  Edit,
+  Download,
+  CheckCircle,
   AlertTriangle,
   FileText,
   Users,
   Calendar,
   Home,
   Scale,
-  FileEdit
+  FileEdit,
+  Settings,
+  ChevronUp,
+  ChevronDown
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -43,6 +46,7 @@ const DocumentPreview = ({
   const [fileFormat, setFileFormat] = useState('docx');
   const [fileName, setFileName] = useState('legal_document');
   const [refinementRequest, setRefinementRequest] = useState('');
+  const [showControls, setShowControls] = useState(false);
   const [editableDetails, setEditableDetails] = useState({
     'Document Type': document?.document_type || 'Legal Document',
     'Party 1 Name': 'John Smith',
@@ -152,7 +156,7 @@ const DocumentPreview = ({
       </Card>
 
       {/* Document Preview Content */}
-      <div className="border-b flex-1 flex flex-col min-h-0">
+      <div className={`${showControls ? 'border-b' : ''} flex-1 flex flex-col min-h-0`}>
         {/* Preview Tabs */}
         <Tabs value={previewTab} onValueChange={setPreviewTab} className="flex-1 flex flex-col min-h-0">
           <TabsList className="grid w-full grid-cols-2 rounded-none flex-shrink-0">
@@ -298,15 +302,38 @@ const DocumentPreview = ({
                 </Button>
               </>
             )}
+
+            {/* Document Controls Toggle */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowControls(!showControls)}
+              className="ml-auto flex items-center gap-2"
+            >
+              <Settings className="h-4 w-4" />
+              {showControls ? 'Hide Controls' : 'Show Controls'}
+              {showControls ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </Button>
           </div>
         </div>
       </div>
 
-      {/* Document Controls - ALL FEATURES RESTORED */}
-      <div className="flex-1 overflow-hidden min-h-0">
-        <ScrollArea className="h-full">
-          <div className="p-4 space-y-4">
-            <h3 className="text-lg font-semibold">🔧 Document Controls</h3>
+      {/* Document Controls - Conditionally Shown */}
+      {showControls && (
+        <div className="flex-1 overflow-hidden min-h-0 border-t">
+          <ScrollArea className="h-full">
+            <div className="p-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">🔧 Document Controls</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowControls(false)}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <ChevronUp className="h-4 w-4" />
+                </Button>
+              </div>
 
           {/* Document Refinement */}
           <Accordion type="single" collapsible className="w-full">
@@ -522,9 +549,10 @@ const DocumentPreview = ({
               </Alert>
             )}
           </div>
-          </div>
-        </ScrollArea>
-      </div>
+            </div>
+          </ScrollArea>
+        </div>
+      )}
     </div>
   );
 };

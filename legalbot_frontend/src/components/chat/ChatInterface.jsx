@@ -9,6 +9,8 @@ import WelcomeScreen from '../WelcomeScreen';
 import DocumentPreview from '../documents/DocumentPreview';
 import { toast } from 'sonner';
 import { createAndDownloadPDF, createAndDownloadDOCX, generateFilename } from '../../utils/documentGenerator';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import {
   Send,
   Bot,
@@ -280,7 +282,7 @@ export default function ChatInterface() {
     }
   };
 
-  const formatMessageContent = (content) => {
+  const formatMessageContent = (content, role = 'assistant') => {
     if (content.includes('DRAFT_COMPLETE:')) {
       const documentContent = content.replace('DRAFT_COMPLETE:', '').trim();
 
@@ -369,9 +371,86 @@ export default function ChatInterface() {
       );
     }
 
+    // For regular messages, use ReactMarkdown with role-based styling
+    const isUser = role === 'user';
+    const textColor = isUser ? 'text-white' : 'text-gray-700';
+    const headingColor = isUser ? 'text-white' : 'text-gray-900';
+    const mutedColor = isUser ? 'text-gray-100' : 'text-gray-600';
+    const codeColor = isUser ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-800';
+
     return (
-      <div className="whitespace-pre-wrap text-sm leading-relaxed">
-        {content}
+      <div className="prose prose-sm max-w-none">
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          components={{
+            // Custom styling based on message role
+            h1: ({ children }) => (
+              <h1 className={`text-lg font-bold mb-3 ${headingColor}`}>
+                {children}
+              </h1>
+            ),
+            h2: ({ children }) => (
+              <h2 className={`text-base font-semibold mb-2 ${headingColor}`}>
+                {children}
+              </h2>
+            ),
+            h3: ({ children }) => (
+              <h3 className={`text-sm font-medium mb-2 ${textColor}`}>
+                {children}
+              </h3>
+            ),
+            p: ({ children }) => (
+              <p className={`mb-3 text-sm leading-relaxed ${textColor}`}>
+                {children}
+              </p>
+            ),
+            ul: ({ children }) => (
+              <ul className="list-disc pl-4 mb-3 space-y-1">
+                {children}
+              </ul>
+            ),
+            ol: ({ children }) => (
+              <ol className="list-decimal pl-4 mb-3 space-y-1">
+                {children}
+              </ol>
+            ),
+            li: ({ children }) => (
+              <li className={`text-sm ${textColor}`}>
+                {children}
+              </li>
+            ),
+            strong: ({ children }) => (
+              <strong className={`font-semibold ${headingColor}`}>
+                {children}
+              </strong>
+            ),
+            em: ({ children }) => (
+              <em className={`italic ${mutedColor}`}>
+                {children}
+              </em>
+            ),
+            code: ({ children }) => (
+              <code className={`${codeColor} px-1 py-0.5 rounded text-xs font-mono`}>
+                {children}
+              </code>
+            ),
+            pre: ({ children }) => (
+              <pre className={`${codeColor} p-3 rounded text-xs font-mono overflow-x-auto mb-3`}>
+                {children}
+              </pre>
+            ),
+            blockquote: ({ children }) => (
+              <blockquote className={`border-l-4 ${isUser ? 'border-blue-300' : 'border-blue-200'} pl-4 italic ${mutedColor} mb-3`}>
+                {children}
+              </blockquote>
+            ),
+            hr: () => (
+              <hr className="border-gray-200 my-4" />
+            ),
+          }}
+        >
+          {content}
+        </ReactMarkdown>
       </div>
     );
   };
@@ -444,7 +523,7 @@ export default function ChatInterface() {
                   : 'bg-white border-gray-200'
               }`}>
                 <CardContent className="p-4">
-                  {formatMessageContent(message.content)}
+                  {formatMessageContent(message.content, message.role)}
                 </CardContent>
               </Card>
 
