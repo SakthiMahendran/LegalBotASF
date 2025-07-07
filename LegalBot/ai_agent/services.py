@@ -33,9 +33,9 @@ def generate_legal_document(prompt, conversation_history=None):
     """
     try:
         # Get API key from Django settings
-        api_key = getattr(settings, 'OPENROUTER_API_KEY', '')
+        api_key = getattr(settings, 'LLM_API_KEY', '')
         if not api_key:
-            raise ValueError("OPENROUTER_API_KEY not configured in Django settings")
+            raise ValueError("LLM_API_KEY not configured in Django settings")
         
         # Initialize agent executor
         agent_executor = get_agent_executor(api_key)

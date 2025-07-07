@@ -175,8 +175,8 @@ CHANNEL_LAYERS = {
 }
 
 # AI Configuration
-OPENROUTER_API_KEY = config('OPENROUTER_API_KEY', default='')
-OPENROUTER_BASE_URL = config('OPENROUTER_BASE_URL', default='https://openrouter.ai/api/v1')
+LLM_API_KEY = config('OPENROUTER_API_KEY', default='')
+LLM_BASE_URL = config('OPENROUTER_BASE_URL', default='https://openrouter.ai/api/v1')
 AI_MODEL = config('AI_MODEL', default='deepseek/deepseek-chat-v3-0324:free')
 AI_TEMPERATURE = config('AI_TEMPERATURE', default=0.3, cast=float)
 

@@ -46,11 +46,11 @@ def get_refinement_prompt(document: str, user_request: str) -> str:
     3.  Return the **ENTIRE, FULLY UPDATED** document as your response. Do not provide conversational text or summaries of changes.
     """
 
-def get_agent_executor(openrouter_api_key: str):
+def get_agent_executor(llm_api_key: str):
     llm = ChatOpenAI(
         model="deepseek/deepseek-chat-v3-0324:free",
         temperature=0.3,
-        api_key=openrouter_api_key,
+        api_key=llm_api_key,
         base_url="https://openrouter.ai/api/v1",
         default_headers={
             "HTTP-Referer": "http://localhost:8501",
