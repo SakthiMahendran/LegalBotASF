@@ -1,0 +1,250 @@
+# LegalBot Migration Project - Complete Context & Features
+
+## Project Overview
+**LegalBot** is an AI-powered legal document assistant that was successfully migrated from **Streamlit** to **Django + React.js with Material-UI**. The application helps users create professional legal documents through interactive AI conversations.
+
+## Original Streamlit App Features
+
+### Core Functionality
+- **AI-Powered Document Generation**: Interactive chat interface with AI legal assistant
+- **Document Types**: Property Transfer Agreements, Lease Agreements, Power of Attorney, Wills, Employment Contracts
+- **Real-time Chat**: Conversational interface for gathering document requirements
+- **Document Preview**: Live preview of generated legal documents
+- **Details Extraction**: Automatic extraction and verification of document details
+- **Multi-format Download**: DOCX and PDF document generation
+- **Session Management**: Multiple document sessions with history
+- **Professional Formatting**: Legal document formatting with proper structure
+
+### UI Features
+- **Sidebar Navigation**: Document history, new document creation, quick guide
+- **Responsive Design**: Mobile and desktop compatibility
+- **Theme Support**: Light/dark theme compatibility
+- **Status Indicators**: Document status (drafting, reviewing, completed)
+- **Professional Styling**: Gradient backgrounds, custom CSS, legal branding
+
+## Migrated Django + React Architecture
+
+### Backend (Django)
+```
+LegalBot/
+├── backend/
+│   ├── settings.py (configured with CORS, JWT, Channels)
+│   ├── urls.py (API routing)
+│   └── asgi.py (WebSocket support)
+├── authentication/ (User management)
+├── chat_sessions/ (Session CRUD)
+├── chat/ (Message handling)
+├── documents/ (Document generation)
+└── ai_agent/ (AI integration)
+```
+
+### Frontend (React + MUI)
+```
+frontend/src/
+├── App.tsx (Main application)
+├── components/
+│   ├── Chat/ (Chat interface)
+│   ├── DocumentPreview/ (Document preview & controls)
+│   ├── Sidebar.tsx (Navigation)
+│   └── WelcomeScreen.tsx (Landing page)
+├── store/ (Redux state management)
+└── services/ (API integration)
+```
+
+## API Schema & Endpoints
+
+### Authentication Endpoints
+```
+POST /api/auth/register/
+POST /api/auth/login/
+POST /api/auth/logout/
+GET /api/auth/user/
+```
+
+### Session Management
+```
+GET /api/sessions/          # List user sessions
+POST /api/sessions/         # Create new session
+GET /api/sessions/{id}/     # Get session details
+PUT /api/sessions/{id}/     # Update session
+DELETE /api/sessions/{id}/  # Delete session
+```
+
+### Chat & Messaging
+```
+GET /api/sessions/{id}/messages/     # Get session messages
+POST /api/sessions/{id}/messages/    # Send message
+WS /ws/chat/{session_id}/           # WebSocket for real-time chat
+```
+
+### AI Agent Integration
+```
+POST /api/ai/generate/
+Request Body:
+{
+  "prompt": "I need a property transfer agreement",
+  "conversation_history": [
+    {"role": "user", "content": "..."},
+    {"role": "assistant", "content": "..."}
+  ]
+}
+
+Response:
+{
+  "result": "AI response or DRAFT_COMPLETE: [document content]"
+}
+```
+
+### Document Management
+```
+GET /api/sessions/{id}/document/                    # Get document
+PUT /api/sessions/{id}/document/                    # Update document
+GET /api/sessions/{id}/document/details/           # Get document details
+PUT /api/sessions/{id}/document/details/           # Update details
+POST /api/sessions/{id}/document/generate/         # Generate document
+GET /api/sessions/{id}/document/download/{format}/ # Download (DOCX/PDF)
+```
+
+## Database Models
+
+### User Model (authentication/models.py)
+```python
+class User(AbstractUser):
+    id = UUIDField(primary_key=True)
+    email = EmailField(unique=True)
+    preferences = JSONField(default=dict)
+    USERNAME_FIELD = 'email'
+```
+
+### Session Model (chat_sessions/models.py)
+```python
+class Session(models.Model):
+    id = UUIDField(primary_key=True)
+    user = ForeignKey(User)
+    title = CharField(max_length=255)
+    status = CharField(choices=['drafting', 'reviewing', 'completed'])
+    created_at = DateTimeField(auto_now_add=True)
+```
+
+### Message Model (chat/models.py)
+```python
+class Message(models.Model):
+    id = UUIDField(primary_key=True)
+    session = ForeignKey(Session)
+    role = CharField(choices=['user', 'assistant'])
+    content = TextField()
+    metadata = JSONField(default=dict)
+    created_at = DateTimeField(auto_now_add=True)
+```
+
+### Document Models (documents/models.py)
+```python
+class Document(models.Model):
+    id = UUIDField(primary_key=True)
+    session = OneToOneField(Session)
+    document_type = CharField(max_length=100)
+    content = TextField()
+    formatted_content = TextField()
+
+class DocumentDetails(models.Model):
+    document = OneToOneField(Document)
+    details = JSONField(default=dict)
+    verified = BooleanField(default=False)
+```
+
+## Key Features Implemented
+
+### Frontend Features
+- **Smooth Chat Interface**: Real-time messaging with typing indicators
+- **Document Preview**: Always-visible document preview with professional formatting
+- **Details Form**: Categorized form fields (Parties, Dates, Property, Legal Terms)
+- **Verification System**: Checkbox verification before download
+- **Multi-format Download**: DOCX and PDF generation
+- **Session Management**: Create, switch, and manage multiple document sessions
+- **Responsive Design**: Mobile-first design with drawer navigation
+- **Professional UI**: Material-UI with custom gradients and legal branding
+
+### Backend Features
+- **AI Integration**: Direct integration with existing Streamlit AI modules
+- **RESTful API**: Complete CRUD operations for all entities
+- **WebSocket Support**: Real-time chat capabilities
+- **Authentication**: JWT-based user authentication
+- **CORS Configuration**: Frontend-backend communication
+- **Document Generation**: Integration with existing document utilities
+
+## Technical Stack
+
+### Backend
+- **Django 5.2.4**: Web framework
+- **Django REST Framework**: API development
+- **Channels**: WebSocket support
+- **JWT Authentication**: User authentication
+- **SQLite**: Database (configurable)
+- **CORS Headers**: Frontend integration
+
+### Frontend
+- **React 18**: UI framework
+- **TypeScript**: Type safety
+- **Material-UI (MUI)**: Component library
+- **Redux Toolkit**: State management
+- **Vite**: Build tool and dev server
+- **Axios**: HTTP client
+
+## Migration Achievements
+
+### ✅ Completed Features
+1. **Full UI Replication**: Exact Streamlit functionality in React
+2. **Backend API**: Complete Django REST API
+3. **Real-time Chat**: Working chat interface with AI integration
+4. **Document Generation**: AI-powered document creation
+5. **Document Preview**: Live document preview and editing
+6. **Download System**: Multi-format document download
+7. **Session Management**: Complete session CRUD operations
+8. **Responsive Design**: Mobile and desktop compatibility
+9. **Professional Styling**: Legal branding and professional appearance
+
+### 🔧 Technical Fixes Applied
+- **Smooth Typing**: Fixed choppy input with useCallback optimization
+- **Enter Key**: Fixed message sending with proper event handling
+- **API Integration**: Real backend connectivity with error handling
+- **MUI Grid**: Fixed Grid2 import issues and warnings
+- **Performance**: Optimized re-renders and state management
+
+## Running the Application
+
+### Start Django Backend
+```bash
+cd e:\NeuroStack\Projects\LegalBot
+.venv\Scripts\activate
+python manage.py runserver
+# Runs on http://localhost:8000
+```
+
+### Start React Frontend
+```bash
+cd e:\NeuroStack\Projects\LegalBot\frontend
+npm run dev
+# Runs on http://localhost:5173
+```
+
+## Project Structure
+```
+LegalBot/
+├── app.py (Original Streamlit app)
+├── modules/ (Original AI logic)
+│   ├── agent.py (AI agent implementation)
+│   ├── ui.py (Streamlit UI components)
+│   └── utils.py (Document utilities)
+├── backend/ (Django project)
+├── frontend/ (React application)
+├── authentication/ (Django app)
+├── chat_sessions/ (Django app)
+├── chat/ (Django app)
+├── documents/ (Django app)
+├── ai_agent/ (Django app)
+├── docs/ (Documentation)
+├── tests/ (Test files)
+└── requirements.txt (Python dependencies)
+```
+
+This migration successfully transformed a Streamlit prototype into a production-ready web application with modern architecture, real-time capabilities, and professional UI/UX design.
