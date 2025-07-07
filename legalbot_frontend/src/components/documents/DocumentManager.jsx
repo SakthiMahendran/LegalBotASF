@@ -139,24 +139,7 @@ export default function DocumentManager() {
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDownload(selectedDocument.id, 'docx')}
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    DOCX
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDownload(selectedDocument.id, 'pdf')}
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    PDF
-                  </Button>
-                </div>
+                
               </div>
             </div>
 

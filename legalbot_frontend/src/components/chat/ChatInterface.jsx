@@ -6,9 +6,9 @@ import { Input } from '../ui/input';
 import { Card, CardContent } from '../ui/card';
 import { Badge } from '../ui/badge';
 import WelcomeScreen from '../WelcomeScreen';
-import DocumentEditor from '../documents/DocumentEditor';
+import DocumentPreview from '../documents/DocumentPreview';
 import { toast } from 'sonner';
-import { generatePDF, generateDOCX, generateFilename } from '../../utils/documentGenerator';
+import { createAndDownloadPDF, createAndDownloadDOCX, generateFilename } from '../../utils/documentGenerator';
 import {
   Send,
   Bot,
@@ -222,10 +222,10 @@ export default function ChatInterface() {
       const filename = generateFilename('legal_document', format);
 
       if (format === 'pdf') {
-        await generatePDF(content, filename);
+        await createAndDownloadPDF(content, 'Legal Document', filename);
         toast.success('PDF downloaded successfully!');
       } else if (format === 'docx') {
-        await generateDOCX(content, filename);
+        await createAndDownloadDOCX(content, 'Legal Document', filename);
         toast.success('DOCX downloaded successfully!');
       } else {
         // Fallback to text download
@@ -261,6 +261,23 @@ export default function ChatInterface() {
   const handleEditorClose = () => {
     setShowEditor(false);
     setCurrentDocument(null);
+  };
+
+  const handleDocumentRefine = async (refinementRequest) => {
+    try {
+      setIsLoading(true);
+
+      // Send refinement request to AI
+      const refinementMessage = `Please refine the following document based on this request: "${refinementRequest}"\n\nCurrent document:\n${currentDocument?.content}`;
+
+      await sendMessage(refinementMessage);
+      toast.success('Refinement request sent to AI!');
+    } catch (error) {
+      console.error('Failed to send refinement request:', error);
+      toast.error('Failed to send refinement request');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const formatMessageContent = (content) => {
@@ -343,26 +360,10 @@ export default function ChatInterface() {
               }}
             >
               <Edit3 className="h-4 w-4 mr-2" />
-              Edit Document
+              Preview Document
             </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-blue-600 border-blue-200 hover:bg-blue-50"
-              onClick={() => handleDownloadDocument(documentContent, 'docx')}
-            >
-              <Download className="h-4 w-4 mr-2" />
-              Download DOCX
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-red-600 border-red-200 hover:bg-red-50"
-              onClick={() => handleDownloadDocument(documentContent, 'pdf')}
-            >
-              <Download className="h-4 w-4 mr-2" />
-              Download PDF
-            </Button>
+
+            
           </div>
         </div>
       );
@@ -516,14 +517,16 @@ export default function ChatInterface() {
       </div>
       </div>
 
-      {/* Document Editor */}
+      {/* Document Preview - Right Panel */}
       {showEditor && currentDocument && (
-        <DocumentEditor
-          document={currentDocument}
-          onClose={handleEditorClose}
-          onSave={handleEditorSave}
-          onDownload={handleDownloadDocument}
-        />
+        <div className="w-1/2 border-l border-gray-200 bg-white">
+          <DocumentPreview
+            document={currentDocument}
+            onUpdate={handleEditorSave}
+            onDownload={handleDownloadDocument}
+            onRefine={handleDocumentRefine}
+          />
+        </div>
       )}
     </div>
   );
